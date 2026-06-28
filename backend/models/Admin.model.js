@@ -8,6 +8,8 @@ const adminSchema = new mongoose.Schema({
    email:{
     type:String,
     required:true,
+    lowercase:true,
+    trim:true,
    },
    password:{
     type:String,
@@ -27,11 +29,23 @@ const adminSchema = new mongoose.Schema({
     required:true,
    },
   second_factor_key:{
-    type:String, 
+    type:String,
+    default:null
+   },
+   is_2fa_enabled:{
+    type:Boolean,
+    default:false
+   },
+   status:{
+    type:String,
+    enum:['active','disabled'],
+    default:'active'
    }
 
 }, {
     timestamps: true
 });
+
+adminSchema.index({ email: 1, tenant: 1 }, { unique: true });
 
 module.exports = mongoose.model('Admin', adminSchema);

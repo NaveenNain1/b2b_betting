@@ -1,0 +1,761 @@
+{
+  "info": {
+    "_postman_id": "c8fc7b1d-9115-46d1-9a65-b2b-betting-api",
+    "name": "B2B Betting API",
+    "description": "Postman collection for Super Admin and Tenant APIs. Set collection variables before running requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000" },
+    { "key": "super_admin_token", "value": "" },
+    { "key": "tenant_token", "value": "" },
+    { "key": "tenant_id", "value": "" },
+    { "key": "tenant_domain", "value": "demo.example.com" },
+    { "key": "plan_id", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "super_session_id", "value": "" },
+    { "key": "tenant_session_id", "value": "" },
+    { "key": "two_factor_code", "value": "123456" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/"
+          }
+        },
+        {
+          "name": "Tenant Route Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/tenant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Super Admin",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          { "key": "token", "value": "{{super_admin_token}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Bootstrap First Super Admin",
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Super Admin\",\n  \"email\": \"super@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": "{{base_url}}/super-admin/bootstrap"
+              }
+            },
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.token) {",
+                      "  pm.collectionVariables.set('super_admin_token', json.data.token);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"super@example.com\",\n  \"password\": \"password123\",\n  \"two_factor_code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/super-admin/login"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Security",
+          "item": [
+            {
+              "name": "Change Password",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newPassword123\"\n}"
+                },
+                "url": "{{base_url}}/super-admin/security/password"
+              }
+            },
+            {
+              "name": "Setup 2FA",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{base_url}}/super-admin/security/2fa/setup"
+              }
+            },
+            {
+              "name": "Enable 2FA",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/super-admin/security/2fa/enable"
+              }
+            },
+            {
+              "name": "Disable 2FA",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"newPassword123\",\n  \"code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/super-admin/security/2fa/disable"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tenants",
+          "item": [
+            {
+              "name": "List Tenants",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/tenants"
+              }
+            },
+            {
+              "name": "Create Tenant",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "brand_name", "value": "Demo Sports", "type": "text" },
+                    { "key": "primary_domain", "value": "{{tenant_domain}}", "type": "text" },
+                    { "key": "frontend_url", "value": "https://{{tenant_domain}}", "type": "text" },
+                    { "key": "theme", "value": "default", "type": "text" },
+                    { "key": "website_title", "value": "Demo Sports", "type": "text" },
+                    { "key": "website_description", "value": "Demo tenant betting site", "type": "text" },
+                    { "key": "subscription", "value": "{\"plan\":\"{{plan_id}}\",\"status\":\"trial\"}", "type": "text" },
+                    { "key": "logo", "type": "file", "src": [] },
+                    { "key": "favicon", "type": "file", "src": [] }
+                  ]
+                },
+                "url": "{{base_url}}/super-admin/tenants"
+              }
+            },
+            {
+              "name": "Update Tenant",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "brand_name", "value": "Demo Sports Updated", "type": "text" },
+                    { "key": "website_title", "value": "Demo Sports Updated", "type": "text" },
+                    { "key": "website_description", "value": "Updated description", "type": "text" },
+                    { "key": "logo", "type": "file", "src": [] },
+                    { "key": "favicon", "type": "file", "src": [] }
+                  ]
+                },
+                "url": "{{base_url}}/super-admin/tenants/{{tenant_id}}"
+              }
+            },
+            {
+              "name": "Ban Tenant",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_banned\": true\n}"
+                },
+                "url": "{{base_url}}/super-admin/tenants/{{tenant_id}}/ban"
+              }
+            },
+            {
+              "name": "Unban Tenant",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_banned\": false\n}"
+                },
+                "url": "{{base_url}}/super-admin/tenants/{{tenant_id}}/ban"
+              }
+            },
+            {
+              "name": "Tenant Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/tenants/{{tenant_id}}/users"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plans",
+          "item": [
+            {
+              "name": "List Plans",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/plans"
+              }
+            },
+            {
+              "name": "Create Plan",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Starter\",\n  \"price_per_month\": 99,\n  \"max_users\": 5,\n  \"sports_allowed\": true,\n  \"casino_allowed\": false,\n  \"features\": [\"Users\", \"KYC\", \"Reports\"],\n  \"is_active\": true\n}"
+                },
+                "url": "{{base_url}}/super-admin/plans"
+              }
+            },
+            {
+              "name": "Update Plan",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Starter Plus\",\n  \"price_per_month\": 149,\n  \"max_users\": 10,\n  \"sports_allowed\": true,\n  \"casino_allowed\": true,\n  \"features\": [\"Users\", \"KYC\", \"Reports\", \"Casino\"],\n  \"is_active\": true\n}"
+                },
+                "url": "{{base_url}}/super-admin/plans/{{plan_id}}"
+              }
+            },
+            {
+              "name": "Delete Plan",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{base_url}}/super-admin/plans/{{plan_id}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Oxapay",
+          "item": [
+            {
+              "name": "Get Oxapay Settings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/oxapay"
+              }
+            },
+            {
+              "name": "Save Oxapay Settings",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"api_key\": \"oxapay_api_key_here\",\n  \"networks\": [\n    { \"network\": \"TRC20\", \"is_enabled\": true },\n    { \"network\": \"BEP20\", \"is_enabled\": true },\n    { \"network\": \"ERC20\", \"is_enabled\": false }\n  ]\n}"
+                },
+                "url": "{{base_url}}/super-admin/oxapay"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logs",
+          "item": [
+            {
+              "name": "Super Admin Login Logs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/logs/login?limit=100"
+              }
+            },
+            {
+              "name": "Tenant Login Logs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/logs/tenant-login?limit=100"
+              }
+            },
+            {
+              "name": "Tenant Login Logs By Tenant",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/logs/tenant-login?tenant={{tenant_id}}&limit=100"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sessions",
+          "item": [
+            {
+              "name": "My Sessions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/super-admin/sessions"
+              }
+            },
+            {
+              "name": "Revoke Session",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{base_url}}/super-admin/sessions/{{super_session_id}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tenant",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          { "key": "token", "value": "{{tenant_token}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register Tenant",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.token) { pm.collectionVariables.set('tenant_token', json.data.token); }",
+                      "if (json.data && json.data.tenant && json.data.tenant._id) { pm.collectionVariables.set('tenant_id', json.data.tenant._id); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "brand_name", "value": "Demo Sports", "type": "text" },
+                    { "key": "primary_domain", "value": "{{tenant_domain}}", "type": "text" },
+                    { "key": "frontend_url", "value": "https://{{tenant_domain}}", "type": "text" },
+                    { "key": "theme", "value": "default", "type": "text" },
+                    { "key": "website_title", "value": "Demo Sports", "type": "text" },
+                    { "key": "website_description", "value": "Demo tenant betting site", "type": "text" },
+                    { "key": "admin_name", "value": "Tenant Admin", "type": "text" },
+                    { "key": "admin_email", "value": "admin@demo.example.com", "type": "text" },
+                    { "key": "admin_password", "value": "password123", "type": "text" },
+                    { "key": "logo", "type": "file", "src": [] },
+                    { "key": "favicon", "type": "file", "src": [] }
+                  ]
+                },
+                "url": "{{base_url}}/tenant/register"
+              }
+            },
+            {
+              "name": "Register Tenant JSON Body",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.token) { pm.collectionVariables.set('tenant_token', json.data.token); }",
+                      "if (json.data && json.data.tenant && json.data.tenant._id) { pm.collectionVariables.set('tenant_id', json.data.tenant._id); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tenant\": {\n    \"brand_name\": \"Demo Sports\",\n    \"primary_domain\": \"{{tenant_domain}}\",\n    \"frontend_url\": \"https://{{tenant_domain}}\",\n    \"theme\": \"default\",\n    \"website_title\": \"Demo Sports\",\n    \"website_description\": \"Demo tenant betting site\"\n  },\n  \"admin\": {\n    \"name\": \"Tenant Admin\",\n    \"email\": \"admin@demo.example.com\",\n    \"password\": \"password123\"\n  }\n}"
+                },
+                "url": "{{base_url}}/tenant/register"
+              }
+            },
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.token) { pm.collectionVariables.set('tenant_token', json.data.token); }",
+                      "if (json.data && json.data.tenant && json.data.tenant._id) { pm.collectionVariables.set('tenant_id', json.data.tenant._id); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tenant_domain\": \"{{tenant_domain}}\",\n  \"email\": \"admin@demo.example.com\",\n  \"password\": \"password123\",\n  \"two_factor_code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/tenant/login"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Profile & Security",
+          "item": [
+            {
+              "name": "Me",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/me"
+              }
+            },
+            {
+              "name": "Update Profile",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Tenant Admin Updated\"\n}"
+                },
+                "url": "{{base_url}}/tenant/profile"
+              }
+            },
+            {
+              "name": "Change Password",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newPassword123\"\n}"
+                },
+                "url": "{{base_url}}/tenant/security/password"
+              }
+            },
+            {
+              "name": "Setup 2FA",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{base_url}}/tenant/security/2fa/setup"
+              }
+            },
+            {
+              "name": "Enable 2FA",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/tenant/security/2fa/enable"
+              }
+            },
+            {
+              "name": "Disable 2FA",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"newPassword123\",\n  \"code\": \"{{two_factor_code}}\"\n}"
+                },
+                "url": "{{base_url}}/tenant/security/2fa/disable"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Users & Permissions",
+          "item": [
+            {
+              "name": "List Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/users"
+              }
+            },
+            {
+              "name": "Create User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.user && json.data.user._id) { pm.collectionVariables.set('user_id', json.data.user._id); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Sub Admin\",\n  \"email\": \"subadmin@demo.example.com\",\n  \"password\": \"password123\",\n  \"type\": \"sub-admin\",\n  \"permissions\": [\"Users\", \"KYC\", \"Settings\"]\n}"
+                },
+                "url": "{{base_url}}/tenant/users"
+              }
+            },
+            {
+              "name": "Update User",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Sub Admin Updated\",\n  \"permissions\": [\"KYC\", \"Settings\"],\n  \"status\": \"active\"\n}"
+                },
+                "url": "{{base_url}}/tenant/users/{{user_id}}"
+              }
+            },
+            {
+              "name": "Update User Password",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"newUserPassword123\"\n}"
+                },
+                "url": "{{base_url}}/tenant/users/{{user_id}}/password"
+              }
+            },
+            {
+              "name": "Delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{base_url}}/tenant/users/{{user_id}}"
+              }
+            },
+            {
+              "name": "Permissions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/permissions"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Subscription",
+          "item": [
+            {
+              "name": "Tenant Plans",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/plans"
+              }
+            },
+            {
+              "name": "Update Subscription",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan_id\": \"{{plan_id}}\",\n  \"status\": \"active\",\n  \"starts_at\": \"2026-06-28T00:00:00.000Z\",\n  \"ends_at\": null\n}"
+                },
+                "url": "{{base_url}}/tenant/subscription"
+              }
+            }
+          ]
+        },
+        {
+          "name": "KYC",
+          "item": [
+            {
+              "name": "Get KYC Settings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/kyc-settings"
+              }
+            },
+            {
+              "name": "Save KYC Settings",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_kyc_required\": true,\n  \"kyc_fields\": [\n    { \"name\": \"Full Name\", \"type\": \"text\", \"is_required\": true },\n    { \"name\": \"Date of Birth\", \"type\": \"date\", \"is_required\": true },\n    { \"name\": \"ID Document\", \"type\": \"file\", \"is_required\": true }\n  ]\n}"
+                },
+                "url": "{{base_url}}/tenant/kyc-settings"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logs",
+          "item": [
+            {
+              "name": "Login Logs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/logs/login?limit=100"
+              }
+            },
+            {
+              "name": "Activity Logs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/logs/activity?limit=100"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Settings",
+          "item": [
+            {
+              "name": "Update Maintenance Mode",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenance_mode\": true,\n  \"maintenance_mode_text\": \"We are updating the site. Please check back soon.\"\n}"
+                },
+                "url": "{{base_url}}/tenant/maintenance-mode"
+              }
+            },
+            {
+              "name": "Connect Domain",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"sports.{{tenant_domain}}\"\n}"
+                },
+                "url": "{{base_url}}/tenant/domains"
+              }
+            },
+            {
+              "name": "DNS Records",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/dns-records"
+              }
+            },
+            {
+              "name": "Themes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/themes"
+              }
+            },
+            {
+              "name": "Update Theme",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "theme", "value": "default", "type": "text" },
+                    { "key": "custom_css", "value": "body { font-family: Arial, sans-serif; }", "type": "text" },
+                    { "key": "website_title", "value": "Demo Sports", "type": "text" },
+                    { "key": "website_description", "value": "Updated tenant betting site", "type": "text" },
+                    { "key": "logo", "type": "file", "src": [] },
+                    { "key": "favicon", "type": "file", "src": [] }
+                  ]
+                },
+                "url": "{{base_url}}/tenant/themes"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sessions",
+          "item": [
+            {
+              "name": "My Sessions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/tenant/sessions"
+              }
+            },
+            {
+              "name": "Revoke Session",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{base_url}}/tenant/sessions/{{tenant_session_id}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

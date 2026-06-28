@@ -28,6 +28,16 @@ const planSchema = new mongoose.Schema({
     casino_allowed: {
         type: Boolean,
         default: false
+    },
+
+    features: {
+        type: [String],
+        default: []
+    },
+
+    is_active: {
+        type: Boolean,
+        default: true
     }
 
 }, {

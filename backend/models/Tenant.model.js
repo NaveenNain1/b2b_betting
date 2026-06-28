@@ -8,9 +8,12 @@ const tenantSchema = new mongoose.Schema({
 
     primary_domain: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
     },
-       frontend_url: {
+    frontend_url: {
         type: String,
         required: true
     },
@@ -20,6 +23,7 @@ const tenantSchema = new mongoose.Schema({
     theme:{
         type:String,
         required:true,
+        default:'default'
     },
     favicon_url:{
         type:String,
@@ -37,14 +41,75 @@ const tenantSchema = new mongoose.Schema({
     },
     is_banned:{
         type:Boolean,
-        required:true,
+        default:false
     },
     maintenance_mode:{
         type:Boolean,
-        required:true
+        default:false
     },
     maintenance_mode_text:{
         type:String
+    },
+    subscription: {
+        plan: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Plan',
+            default: null
+        },
+        status: {
+            type: String,
+            enum: ['trial', 'active', 'past_due', 'cancelled', 'expired'],
+            default: 'trial'
+        },
+        starts_at: {
+            type: Date,
+            default: Date.now
+        },
+        ends_at: {
+            type: Date,
+            default: null
+        }
+    },
+    connected_domains: [
+        {
+            domain: {
+                type: String,
+                required: true,
+                lowercase: true,
+                trim: true
+            },
+            status: {
+                type: String,
+                enum: ['pending', 'verified', 'failed'],
+                default: 'pending'
+            },
+            verified_at: {
+                type: Date,
+                default: null
+            }
+        }
+    ],
+    dns_records: [
+        {
+            type: {
+                type: String
+            },
+            key: {
+                type: String
+            },
+            value: {
+                type: String
+            },
+            status: {
+                type: String,
+                enum: ['pending', 'verified'],
+                default: 'pending'
+            }
+        }
+    ],
+    settings: {
+        type: Object,
+        default: {}
     }
 
 }, {

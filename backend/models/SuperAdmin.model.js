@@ -8,6 +8,9 @@ const superAdminSchema = new mongoose.Schema({
    email:{
     type:String,
     required:true,
+    unique:true,
+    lowercase:true,
+    trim:true,
    },
    password:{
     type:String,
@@ -16,6 +19,10 @@ const superAdminSchema = new mongoose.Schema({
    second_factor_key:{
     type:String, 
     default:null
+   },
+   is_2fa_enabled:{
+    type:Boolean,
+    default:false
    }
   
 

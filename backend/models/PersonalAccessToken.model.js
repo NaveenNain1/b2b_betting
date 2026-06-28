@@ -37,6 +37,21 @@ const personalAccessTokenSchema = new mongoose.Schema({
     expires_at: {
         type: Date,
         default: null
+    },
+
+    ip_address: {
+        type: String,
+        default: null
+    },
+
+    user_agent: {
+        type: String,
+        default: null
+    },
+
+    revoked_at: {
+        type: Date,
+        default: null
     }
 
 }, {
