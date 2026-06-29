@@ -17,13 +17,13 @@ app.get('/', (req, res) => {
 });
 
 const { handleWebhook } = require('./controllers/payment.controller');
-app.post('/webhook/oxapay', handleWebhook);
+app.post('/api/webhook/oxapay', handleWebhook);
 
 const tenantRoutes = require('./routes/tenant.routes');
-app.use('/tenant', tenantRoutes);
+app.use('/api/tenant', tenantRoutes);
 
 const superAdminRoutes = require('./routes/superAdmin.routes');
-app.use('/super-admin', superAdminRoutes);
+app.use('/api/super-admin', superAdminRoutes);
 
 app.use((req, res) => {
     res.status(404).json({

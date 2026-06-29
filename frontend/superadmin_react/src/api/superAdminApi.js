@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3000/super-admin';
+const BASE_URL = 'https://admin.madarchod.tech/api/super-admin';
 
 const api = axios.create({
   baseURL: BASE_URL,

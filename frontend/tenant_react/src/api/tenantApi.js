@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3000/tenant';
+const BASE_URL = 'https://b2b.madarchod.tech/api/tenant';
 
 const api = axios.create({ baseURL: BASE_URL });
 

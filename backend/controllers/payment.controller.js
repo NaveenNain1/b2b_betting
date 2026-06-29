@@ -35,7 +35,7 @@ exports.initiatePayment = asyncHandler(async (req, res) => {
 
     const description = `${req.tenant._id}_${plan._id}_${(Math.random()*1000)}`;
     const orderId = Math.floor(Math.random()*100000)+"_"+(Date.now());
-    const callbackUrl = `${process.env.APP_URL || 'http://localhost:3000'}/webhook/oxapay`;
+    const callbackUrl = `${process.env.APP_URL || 'https://admin.madarchod.tech/api'}/webhook/oxapay`;
 // console.log(orderId);
     const body = {
         amount: plan.price_per_month,
@@ -60,7 +60,7 @@ exports.initiatePayment = asyncHandler(async (req, res) => {
 
         const data = await response.json();
         if (data.status !== 200) {
-            return error(res, data || 'Payment initiation failed', 400);
+            return error(res, data   || 'Payment initiation failed', 400);
         }
 
         return success(res, 'Payment initiated', {
