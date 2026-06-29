@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import * as api from '../api/superAdminApi';
 
 export default function OxapayPage() {
-  const [settings, setSettings] = useState({ merchant_api_key: '', payout_api_key: '', sandbox: false });
+  const [settings, setSettings] = useState({ api_key: '', payout_api_key: '', sandbox: false });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showKeys, setShowKeys] = useState({ merchant: false, payout: false });
@@ -64,8 +64,8 @@ export default function OxapayPage() {
                 <input
                   id="oxapay-merchant-key"
                   type={showKeys.merchant ? 'text' : 'password'}
-                  value={settings.merchant_api_key || ''}
-                  onChange={(e) => setSettings({ ...settings, merchant_api_key: e.target.value })}
+                  value={settings.api_key || ''}
+                  onChange={(e) => setSettings({ ...settings, api_key: e.target.value })}
                   className="input pr-10"
                   placeholder="Enter merchant API key"
                 />

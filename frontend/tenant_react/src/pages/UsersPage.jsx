@@ -37,10 +37,10 @@ function UserForm({ user, onSave, onClose }) {
       if (isEdit && !payload.password) delete payload.password;
       if (isEdit) {
         await api.updateUser(user._id, payload);
-        toast.success('User updated');
+        toast.success('Sub Admin updated');
       } else {
         await api.createUser(payload);
-        toast.success('User created');
+        toast.success('Sub Admin created');
       }
       onSave();
       onClose();
@@ -104,7 +104,7 @@ function UserForm({ user, onSave, onClose }) {
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-          {loading ? 'Saving...' : isEdit ? 'Update User' : 'Create User'}
+          {loading ? 'Saving...' : isEdit ? 'Update Sub Admin' : 'Create Sub Admin'}
         </button>
       </div>
     </form>
@@ -176,7 +176,7 @@ export default function UsersPage() {
     setDeleteLoading(true);
     try {
       await api.deleteUser(deleteDialog.user._id);
-      toast.success('User deleted');
+      toast.success('Sub Admin deleted');
       setDeleteDialog({ open: false, user: null });
       fetchUsers();
     } catch (err) {
@@ -188,7 +188,7 @@ export default function UsersPage() {
 
   const columns = [
     {
-      key: 'name', label: 'User', sortable: true,
+      key: 'name', label: 'Sub Admin', sortable: true,
       render: (v, row) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-white text-xs font-bold">
@@ -228,25 +228,25 @@ export default function UsersPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2"><Users size={20} className="text-brand-400" /> Team Users</h2>
-          <p className="text-sm text-gray-500 mt-0.5">{users.length} users in your organization</p>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><Users size={20} className="text-brand-400" /> Sub Admins</h2>
+          <p className="text-sm text-gray-500 mt-0.5">{users.length} sub-admins in your organization</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-2 bg-surface-input rounded-lg border border-surface-border">
             <Search size={14} className="text-gray-500" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search users..." className="bg-transparent text-sm text-gray-200 placeholder:text-gray-500 outline-none w-40" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search sub-admins..." className="bg-transparent text-sm text-gray-200 placeholder:text-gray-500 outline-none w-40" />
           </div>
           <button id="create-user-btn" onClick={() => setFormModal({ open: true, user: null })} className="btn-primary">
-            <Plus size={16} /> New User
+            <Plus size={16} /> New Sub Admin
           </button>
         </div>
       </div>
 
       <div className="card">
-        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No users found" />
+        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No sub-admins found" />
       </div>
 
-      <Modal isOpen={formModal.open} onClose={() => setFormModal({ open: false, user: null })} title={formModal.user ? 'Edit User' : 'Create User'} size="lg">
+      <Modal isOpen={formModal.open} onClose={() => setFormModal({ open: false, user: null })} title={formModal.user ? 'Edit Sub Admin' : 'Create Sub Admin'} size="lg">
         <UserForm user={formModal.user} onSave={fetchUsers} onClose={() => setFormModal({ open: false, user: null })} />
       </Modal>
 
@@ -256,7 +256,7 @@ export default function UsersPage() {
         isOpen={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, user: null })}
         onConfirm={handleDelete}
-        title="Delete User"
+        title="Delete Sub Admin"
         message={`Are you sure you want to delete "${deleteDialog.user?.name}"?`}
         confirmLabel="Delete"
         loading={deleteLoading}

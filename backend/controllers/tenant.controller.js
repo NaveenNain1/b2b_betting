@@ -91,6 +91,18 @@ exports.register = asyncHandler(async (req, res) => {
         return error(res, 'Tenant domain already exists', 409);
     }
 
+    // Global email uniqueness check — one account per email across all tenants
+    const emailExists = await Admin.findOne({
+        email: String(admin.email || '').toLowerCase().trim()
+    });
+    if (emailExists) {
+        return error(res, 'This email is already registered. Please use a different email address.', 409);
+    }
+
+    const startsAt = new Date();
+    const endsAt = new Date();
+    endsAt.setDate(endsAt.getDate() + 2); // 2 days trial
+
     const tenantData = {
         brand_name: tenant.brand_name,
         primary_domain: tenant.primary_domain,
@@ -102,7 +114,13 @@ exports.register = asyncHandler(async (req, res) => {
         favicon_url: tenant.favicon_url,
         custom_css: tenant.custom_css,
         dns_records: dnsRecords,
-        subscription: parseMaybeJson(tenant.subscription)
+        subscription: {
+            plan: null,
+            status: 'trial',
+            starts_at: startsAt,
+            ends_at: endsAt
+        },
+        onboarding: parseMaybeJson(req.body.onboarding) || {}
     };
 
     await applyTenantUploads(req, tenantData);
@@ -134,8 +152,23 @@ exports.register = asyncHandler(async (req, res) => {
 });
 
 exports.login = asyncHandler(async (req, res) => {
-    const { email, password, tenant_domain, two_factor_code } = req.body;
-    const tenant = await Tenant.findOne({ primary_domain: tenant_domain });
+    const { email, password, two_factor_code } = req.body;
+    
+    // Find admin by email first
+    const admin = await Admin.findOne({
+        email: String(email || '').toLowerCase().trim()
+    });
+
+    if (!admin || admin.status !== 'active') {
+        await logTenantLogin(req, {
+            email: email || '',
+            status: 'failed',
+            reason: 'Invalid credentials'
+        });
+        return error(res, 'Invalid credentials', 401);
+    }
+
+    const tenant = await Tenant.findById(admin.tenant);
 
     if (!tenant || tenant.is_banned) {
         await logTenantLogin(req, {
@@ -147,12 +180,7 @@ exports.login = asyncHandler(async (req, res) => {
         return error(res, 'Tenant unavailable', 403);
     }
 
-    const admin = await Admin.findOne({
-        email: String(email || '').toLowerCase(),
-        tenant: tenant._id
-    });
-
-    if (!admin || !verifyPassword(password, admin.password) || admin.status !== 'active') {
+    if (!verifyPassword(password, admin.password)) {
         await logTenantLogin(req, {
             tenant: tenant._id,
             email: email || '',

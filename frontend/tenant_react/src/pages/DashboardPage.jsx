@@ -3,6 +3,7 @@ import { Users, Activity, Shield, Globe, TrendingUp, CreditCard } from 'lucide-r
 import { useAuth } from '../contexts/AuthContext';
 import * as api from '../api/tenantApi';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import DnsSetupModal from '../components/DnsSetupModal';
 
 const StatCard = ({ label, value, icon: Icon, color, sub }) => (
   <div className="card p-5 flex items-start justify-between">
@@ -35,6 +36,14 @@ export default function DashboardPage() {
   const [loginLogsData, setLoginLogsData] = useState([]);
   const [activityLogsData, setActivityLogsData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDns, setShowDns] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('show_dns_setup') === 'true') {
+      setShowDns(true);
+      localStorage.removeItem('show_dns_setup');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -157,6 +166,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+      <DnsSetupModal isOpen={showDns} onClose={() => setShowDns(false)} primaryDomain={tenant?.primary_domain} />
     </div>
   );
 }

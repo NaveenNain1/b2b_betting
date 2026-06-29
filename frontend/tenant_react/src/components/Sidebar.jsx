@@ -7,19 +7,19 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Dashboard', to: '/', icon: LayoutDashboard, exact: true },
-  { label: 'Users', to: '/users', icon: Users },
+  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, exact: true },
+  { label: 'Sub Admins', to: '/users', icon: Users, perm: 'Users' },
   { label: 'Subscription', to: '/subscription', icon: CreditCard },
-  { label: 'KYC Settings', to: '/kyc', icon: Shield },
-  { label: 'Themes', to: '/themes', icon: Palette },
-  { label: 'Domains', to: '/domains', icon: Globe },
+  { label: 'KYC Settings', to: '/kyc', icon: Shield, perm: 'KYC' },
+  { label: 'Themes', to: '/themes', icon: Palette, perm: 'Settings' },
+  { label: 'Domains', to: '/domains', icon: Globe, perm: 'Settings' },
   {
     label: 'Logs', icon: FileText, children: [
       { label: 'Login Logs', to: '/logs/login', icon: Activity },
       { label: 'Activity Logs', to: '/logs/activity', icon: Zap },
     ]
   },
-  { label: 'Maintenance', to: '/maintenance', icon: Wrench },
+  { label: 'Maintenance', to: '/maintenance', icon: Wrench, perm: 'Settings' },
   { label: 'Sessions', to: '/sessions', icon: Monitor },
   { label: 'Security', to: '/security', icon: Shield },
   { label: 'Profile', to: '/profile', icon: UserCircle },
@@ -58,6 +58,21 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { user, tenant, logout } = useAuth();
   const navigate = useNavigate();
 
+  const filteredNavItems = navItems.filter(item => {
+    if (user?.type === 'admin') return true;
+    
+    if (item.children) {
+      const visibleChildren = item.children.filter(child => {
+        if (!child.perm) return true;
+        return user?.permissions?.includes(child.perm);
+      });
+      return visibleChildren.length > 0;
+    }
+    
+    if (!item.perm) return true;
+    return user?.permissions?.includes(item.perm);
+  });
+
   return (
     <aside className={`fixed left-0 top-0 h-full bg-surface-card border-r border-surface-border flex flex-col transition-all duration-300 z-30 ${collapsed ? 'w-16' : 'w-60'}`}>
       <div className="flex items-center justify-between p-4 border-b border-surface-border">
@@ -82,7 +97,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => <NavItem key={item.label} item={item} collapsed={collapsed} />)}
+        {filteredNavItems.map((item) => <NavItem key={item.label} item={item} collapsed={collapsed} />)}
       </nav>
 
       <div className="p-3 border-t border-surface-border">

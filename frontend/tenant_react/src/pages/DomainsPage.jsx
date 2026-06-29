@@ -8,7 +8,7 @@ export default function DomainsPage() {
   const { tenant } = useAuth();
   const [dnsRecords, setDnsRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [domain, setDomain] = useState('');
+  const [domain, setDomain] = useState(tenant?.primary_domain || '');
   const [connecting, setConnecting] = useState(false);
   const [copied, setCopied] = useState(null);
 
@@ -24,10 +24,9 @@ export default function DomainsPage() {
     setConnecting(true);
     try {
       await api.connectDomain({ domain });
-      toast.success(`Domain ${domain} connected`);
-      setDomain('');
+      toast.success(`Domain changed to ${domain}`);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to connect domain');
+      toast.error(err.response?.data?.message || 'Failed to change domain');
     } finally {
       setConnecting(false);
     }
@@ -47,12 +46,12 @@ export default function DomainsPage() {
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <Globe size={20} className="text-brand-400" /> Domain Management
         </h2>
-        <p className="text-sm text-gray-500 mt-0.5">Connect custom domains to your platform</p>
+        <p className="text-sm text-gray-500 mt-0.5">Configure your custom domain settings</p>
       </div>
 
       {/* Connect domain */}
       <div className="card p-5">
-        <h3 className="font-semibold text-white mb-4">Connect New Domain</h3>
+        <h3 className="font-semibold text-white mb-4">Change Domain</h3>
         <form onSubmit={handleConnect} className="flex gap-3">
           <input
             id="domain-input"
@@ -63,7 +62,7 @@ export default function DomainsPage() {
             required
           />
           <button id="connect-domain-btn" type="submit" disabled={connecting} className="btn-primary whitespace-nowrap">
-            <Plus size={16} />{connecting ? 'Connecting...' : 'Connect Domain'}
+            <Plus size={16} />{connecting ? 'Saving...' : 'Change Domain'}
           </button>
         </form>
       </div>

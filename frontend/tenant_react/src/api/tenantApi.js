@@ -46,6 +46,8 @@ export const getPermissions = () => api.get('/permissions');
 // Plans & Subscription
 export const getPlans = () => api.get('/plans');
 export const updateSubscription = (data) => api.patch('/subscription', data);
+export const getPaymentNetworks = () => api.get('/payment/networks');
+export const initiatePayment = (data) => api.post('/payment/initiate', data);
 
 // KYC
 export const getKycSettings = () => api.get('/kyc-settings');

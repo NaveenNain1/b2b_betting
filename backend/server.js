@@ -16,6 +16,9 @@ app.get('/', (req, res) => {
     res.status(200).json({success:true, message:'Server running'});
 });
 
+const { handleWebhook } = require('./controllers/payment.controller');
+app.post('/webhook/oxapay', handleWebhook);
+
 const tenantRoutes = require('./routes/tenant.routes');
 app.use('/tenant', tenantRoutes);
 

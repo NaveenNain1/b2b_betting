@@ -46,6 +46,7 @@ const adminSchema = new mongoose.Schema({
     timestamps: true
 });
 
-adminSchema.index({ email: 1, tenant: 1 }, { unique: true });
+// Global unique email — one email address across ALL tenants
+adminSchema.index({ email: 1 }, { unique: true });
 
 module.exports = mongoose.model('Admin', adminSchema);

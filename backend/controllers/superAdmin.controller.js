@@ -275,9 +275,16 @@ exports.getOxapay = asyncHandler(async (req, res) => {
 
 exports.updateOxapay = asyncHandler(async (req, res) => {
     const current = await SuperOxapay.findOne().sort({ createdAt: -1 });
+    const bodyy = {
+        api_key:req.body.api_key,
+        networks:[
+            {network:'TRC20',is_enabled:true},
+            {network:'ERC20',is_enabled:true},
+        ]
+    };
     const settings = current
-        ? await SuperOxapay.findByIdAndUpdate(current._id, req.body, { new: true, runValidators: true })
-        : await SuperOxapay.create(req.body);
+        ? await SuperOxapay.findByIdAndUpdate(current._id, bodyy, { new: true, runValidators: true })
+        : await SuperOxapay.create(bodyy);
 
     return success(res, 'Oxapay settings saved', { settings });
 });

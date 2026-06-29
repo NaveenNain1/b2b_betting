@@ -3,12 +3,15 @@ import { CreditCard, Check, Zap } from 'lucide-react';
 import { toast } from 'react-toastify';
 import * as api from '../api/tenantApi';
 import { useAuth } from '../contexts/AuthContext';
+import CryptoPaymentModal from '../components/CryptoPaymentModal';
 
 export default function SubscriptionPage() {
   const { tenant, updateTenant } = useAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
     api.getPlans()
@@ -19,17 +22,9 @@ export default function SubscriptionPage() {
 
   const currentPlanId = tenant?.subscription?.plan?._id || tenant?.subscription?.plan;
 
-  const handleUpgrade = async (plan) => {
-    setUpgrading(plan._id);
-    try {
-      const res = await api.updateSubscription({ plan_id: plan._id, status: 'active' });
-      updateTenant(res.data.data.tenant);
-      toast.success(`Upgraded to ${plan.name}!`);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to upgrade');
-    } finally {
-      setUpgrading(null);
-    }
+  const handleUpgrade = (plan) => {
+    setSelectedPlan(plan);
+    setShowPayment(true);
   };
 
   const subStatus = tenant?.subscription?.status || 'trial';
@@ -119,6 +114,7 @@ export default function SubscriptionPage() {
           </div>
         )}
       </div>
+      <CryptoPaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} plan={selectedPlan} />
     </div>
   );
 }

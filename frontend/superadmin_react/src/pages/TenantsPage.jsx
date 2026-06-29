@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Ban, Users, Search, Globe } from 'lucide-react';
+import { Plus, Edit2, Ban, Users, Search, Globe, ClipboardList, Check, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import * as api from '../api/superAdminApi';
 import DataTable from '../components/DataTable';
@@ -130,6 +130,100 @@ function TenantForm({ tenant, plans, onSave, onClose }) {
   );
 }
 
+/* ─── Onboarding Info Modal ─────────────────────────────────── */
+const BOOL_CHIP = ({ v }) => v === true
+  ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/15 text-emerald-400"><Check size={10} />Yes</span>
+  : v === false
+    ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-red-500/15 text-red-400"><X size={10} />No</span>
+    : <span className="text-gray-600 text-xs">—</span>;
+
+const TagList = ({ items }) => (
+  <div className="flex flex-wrap gap-1.5">
+    {items && items.length > 0
+      ? items.map((t) => <span key={t} className="px-2 py-0.5 rounded-md text-xs font-medium bg-brand-600/20 text-brand-300 border border-brand-600/30">{t}</span>)
+      : <span className="text-gray-600 text-xs">—</span>}
+  </div>
+);
+
+const InfoRow = ({ label, children }) => (
+  <div className="flex items-start justify-between gap-4 py-2.5 border-b border-surface-border last:border-0">
+    <span className="text-xs text-gray-500 font-medium min-w-[180px] flex-shrink-0">{label}</span>
+    <div className="text-right">{children}</div>
+  </div>
+);
+
+const SubHead = ({ children }) => (
+  <p className="text-xs font-bold text-brand-400 uppercase tracking-widest mt-5 mb-2 flex items-center gap-2">
+    <span className="flex-1 h-px bg-brand-600/20" />{children}<span className="flex-1 h-px bg-brand-600/20" />
+  </p>
+);
+
+function OnboardingModal({ tenant, isOpen, onClose }) {
+  const ob = tenant?.onboarding || {};
+  const w = ob.wallet || {};
+  const ag = ob.agent || {};
+  const af = ob.affiliate || {};
+  const ky = ob.kyc_security || {};
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Onboarding — ${tenant?.brand_name}`} size="lg">
+      <div className="space-y-1 text-sm max-h-[70vh] overflow-y-auto pr-1">
+
+        <SubHead>Platform & Market</SubHead>
+        <InfoRow label="Platform Types">
+          <TagList items={ob.platform_types} />
+        </InfoRow>
+        <InfoRow label="Target Region">
+          <span className="text-gray-300">{ob.target_region || '—'}</span>
+        </InfoRow>
+        <InfoRow label="Launch Date">
+          <span className="text-gray-300">{ob.launch_date || '—'}</span>
+        </InfoRow>
+        <InfoRow label="Reference Platform">
+          <span className="text-gray-300">{ob.reference_platform || '—'}</span>
+        </InfoRow>
+
+        <SubHead>Wallet System</SubHead>
+        <InfoRow label="Single wallet for all games"><BOOL_CHIP v={w.single_wallet} /></InfoRow>
+        <InfoRow label="Separate wallet per provider"><BOOL_CHIP v={w.separate_wallet_per_provider} /></InfoRow>
+        <InfoRow label="Auto wallet transfer"><BOOL_CHIP v={w.auto_wallet_transfer} /></InfoRow>
+        <InfoRow label="Multi-currency wallet"><BOOL_CHIP v={w.multi_currency} /></InfoRow>
+
+        <SubHead>Agent System</SubHead>
+        <InfoRow label="Agent Structure">
+          <TagList items={ag.structure} />
+        </InfoRow>
+        <InfoRow label="Multi-level commission"><BOOL_CHIP v={ag.multi_level_commission} /></InfoRow>
+        <InfoRow label="Commission levels">
+          <span className="text-gray-300">{ag.commission_levels ?? '—'}</span>
+        </InfoRow>
+
+        <SubHead>Affiliate System</SubHead>
+        <InfoRow label="Affiliate Models">
+          <TagList items={af.models} />
+        </InfoRow>
+        <InfoRow label="Affiliate Levels">
+          <span className="text-gray-300">{af.levels ?? '—'}</span>
+        </InfoRow>
+
+        <SubHead>KYC & Security</SubHead>
+        {[
+          ['KYC Verification', ky.kyc_verification],
+          ['AML', ky.aml],
+          ['Fraud Detection', ky.fraud_detection],
+          ['Device Fingerprinting', ky.device_fingerprinting],
+          ['Geo Blocking', ky.geo_blocking],
+          ['Real-time Reports', ky.realtime_reports],
+          ['Responsible Gaming', ky.responsible_gaming],
+        ].map(([label, val]) => (
+          <InfoRow key={label} label={label}><BOOL_CHIP v={val} /></InfoRow>
+        ))}
+
+      </div>
+    </Modal>
+  );
+}
+
 function TenantUsersModal({ tenant, isOpen, onClose }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -174,6 +268,7 @@ export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const [formModal, setFormModal] = useState({ open: false, tenant: null });
   const [usersModal, setUsersModal] = useState({ open: false, tenant: null });
+  const [obModal, setObModal] = useState({ open: false, tenant: null });
   const [banDialog, setBanDialog] = useState({ open: false, tenant: null });
   const [banLoading, setBanLoading] = useState(false);
 
@@ -256,8 +351,11 @@ export default function TenantsPage() {
           <button onClick={() => setFormModal({ open: true, tenant: row })} className="p-1.5 rounded-lg hover:bg-surface-hover text-gray-400 hover:text-white transition-colors" title="Edit">
             <Edit2 size={14} />
           </button>
-          <button onClick={() => setUsersModal({ open: true, tenant: row })} className="p-1.5 rounded-lg hover:bg-surface-hover text-gray-400 hover:text-blue-400 transition-colors" title="Users">
+          <button onClick={() => setUsersModal({ open: true, tenant: row })} className="p-1.5 rounded-lg hover:bg-surface-hover text-gray-400 hover:text-blue-400 transition-colors" title="Sub Admins">
             <Users size={14} />
+          </button>
+          <button onClick={() => setObModal({ open: true, tenant: row })} className="p-1.5 rounded-lg hover:bg-surface-hover text-gray-400 hover:text-purple-400 transition-colors" title="Onboarding Info">
+            <ClipboardList size={14} />
           </button>
           <button onClick={() => setBanDialog({ open: true, tenant: row })} className={`p-1.5 rounded-lg hover:bg-surface-hover transition-colors ${row.is_banned ? 'text-emerald-400' : 'text-red-400'}`} title={row.is_banned ? 'Unban' : 'Ban'}>
             <Ban size={14} />
@@ -318,6 +416,13 @@ export default function TenantsPage() {
         tenant={usersModal.tenant}
         isOpen={usersModal.open}
         onClose={() => setUsersModal({ open: false, tenant: null })}
+      />
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        tenant={obModal.tenant}
+        isOpen={obModal.open}
+        onClose={() => setObModal({ open: false, tenant: null })}
       />
 
       {/* Ban Dialog */}

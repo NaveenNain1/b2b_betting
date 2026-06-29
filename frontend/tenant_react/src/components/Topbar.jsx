@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const routeLabels = {
-  '/': 'Dashboard', '/users': 'Users', '/subscription': 'Subscription',
+  '/dashboard': 'Dashboard', '/users': 'Sub Admins', '/subscription': 'Subscription',
   '/kyc': 'KYC Settings', '/themes': 'Theme Settings', '/domains': 'Domain Management',
   '/logs/login': 'Login Logs', '/logs/activity': 'Activity Logs',
   '/maintenance': 'Maintenance Mode', '/sessions': 'Sessions',

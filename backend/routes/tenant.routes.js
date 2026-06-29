@@ -36,8 +36,12 @@ router.delete('/users/:userId', tenantAuth, requirePermission('Users'), controll
 
 router.get('/permissions', tenantAuth, controller.permissions);
 
+const paymentController = require('../controllers/payment.controller');
+
 router.get('/plans', tenantAuth, controller.plans);
 router.patch('/subscription', tenantAuth, controller.updateSubscription);
+router.get('/payment/networks', tenantAuth, paymentController.getNetworks);
+router.post('/payment/initiate', tenantAuth, paymentController.initiatePayment);
 
 router.get('/kyc-settings', tenantAuth, requirePermission('KYC'), controller.getKycSettings);
 router.put('/kyc-settings', tenantAuth, requirePermission('KYC'), controller.saveKycSettings);

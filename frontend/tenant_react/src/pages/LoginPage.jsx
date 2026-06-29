@@ -6,7 +6,7 @@ import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
 export default function LoginPage() {
   const { loginUser, loading } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', tenant_domain: '', two_factor_code: '' });
+  const [form, setForm] = useState({ email: '', password: '', two_factor_code: '' });
   const [showPass, setShowPass] = useState(false);
   const [needs2fa, setNeeds2fa] = useState(false);
   const [error, setError] = useState('');
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('');
     const result = await loginUser(form);
     if (result.success) {
-      navigate('/');
+      navigate('/dashboard');
     } else {
       if (result.message?.toLowerCase().includes('two factor')) setNeeds2fa(true);
       setError(result.message);
@@ -51,11 +51,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="label">Platform Domain *</label>
-              <input id="t-domain" name="tenant_domain" type="text" required value={form.tenant_domain} onChange={handleChange} className="input" placeholder="yourbrand.com" />
-              <p className="text-xs text-gray-500 mt-1">Your platform's primary domain</p>
-            </div>
             <div>
               <label className="label">Email Address</label>
               <input id="t-email" name="email" type="email" required value={form.email} onChange={handleChange} className="input" placeholder="admin@yourbrand.com" />

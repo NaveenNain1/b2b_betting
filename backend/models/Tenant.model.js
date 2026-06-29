@@ -110,6 +110,37 @@ const tenantSchema = new mongoose.Schema({
     settings: {
         type: Object,
         default: {}
+    },
+
+    onboarding: {
+        platform_types: [{ type: String }],
+        target_region: { type: String, default: '' },
+        launch_date: { type: String, default: '' },
+        reference_platform: { type: String, default: '' },
+        wallet: {
+            single_wallet: { type: Boolean, default: null },
+            separate_wallet_per_provider: { type: Boolean, default: null },
+            auto_wallet_transfer: { type: Boolean, default: null },
+            multi_currency: { type: Boolean, default: null }
+        },
+        agent: {
+            structure: [{ type: String }],
+            multi_level_commission: { type: Boolean, default: null },
+            commission_levels: { type: Number, default: null }
+        },
+        affiliate: {
+            models: [{ type: String }],
+            levels: { type: Number, default: null }
+        },
+        kyc_security: {
+            kyc_verification: { type: Boolean, default: false },
+            aml: { type: Boolean, default: false },
+            fraud_detection: { type: Boolean, default: false },
+            device_fingerprinting: { type: Boolean, default: false },
+            geo_blocking: { type: Boolean, default: false },
+            realtime_reports: { type: Boolean, default: false },
+            responsible_gaming: { type: Boolean, default: false }
+        }
     }
 
 }, {
